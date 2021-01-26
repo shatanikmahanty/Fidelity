@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'blocs/menu_provider.dart';
 import 'home.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -35,7 +38,10 @@ class _MyAppState extends State<MyApp> {
         }),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Home(),
+      home: ChangeNotifierProvider(
+        create: (_) => MenuProvider(),
+        child: Home(),
+      ),
     );
   }
 }

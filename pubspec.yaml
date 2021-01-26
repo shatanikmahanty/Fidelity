@@ -3,7 +3,7 @@ description: Fidelity is a voice assistant app built using flutter
 
 publish_to: 'none'
 
-version: 0.0.1+1
+version: 0.0.2+2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -12,8 +12,21 @@ dependencies:
   flutter:
     sdk: flutter
   speech_to_text: ^3.1.0
+  flutter_platform_widgets: ^0.72.0
   flutter_tts: ^2.1.0
+  contacts_service: ^0.4.6
+  url_launcher: ^5.7.10
   progress_indicators: ^0.1.5
+  provider: ^4.3.2+4
+  permission_handler: ^5.0.1+1
+  flutter_phone_direct_caller: ^1.0.1
+  animated_text_kit: ^3.1.0
+  flutter_open_whatsapp: ^0.1.2
+  installed_apps: ^1.1.1
+  alarmclock: ^0.0.2
+  intent: ^1.4.0
+  webview_flutter: ^1.0.7
+  flutter_zoom_drawer: ^1.0.4+1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.1
@@ -36,9 +49,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/brain.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
