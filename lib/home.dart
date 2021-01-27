@@ -15,7 +15,7 @@ class Home extends StatefulWidget {
     MenuItem("promos", Icons.card_giftcard, 1),
     MenuItem("notifications", Icons.notifications, 2),
     MenuItem("help", Icons.help, 3),
-    MenuItem("about_us", Icons.info_outline, 4),
+    MenuItem("Settings", Icons.settings, 4),
   ];
 
   @override
@@ -51,7 +51,7 @@ class _HomeState extends State<Home> {
       showShadow: true,
       angle: 0,
       slideWidth: MediaQuery.of(context).size.width *
-          (ZoomDrawer.isRTL() ? 0.45 : 0.55),
+          (MediaQuery.of(context).size.width > 600 ? 0.25 : 0.55),
       openCurve: Curves.easeInCirc,
       closeCurve: Curves.easeOutCirc,
     );
@@ -59,6 +59,7 @@ class _HomeState extends State<Home> {
 
   void _updatePage(index) {
     Provider.of<MenuProvider>(context, listen: false).updateCurrentPage(index);
+    Provider.of<MenuProvider>(context, listen: false).menuOpened(false);
     _drawerController.toggle();
   }
 }
@@ -74,7 +75,6 @@ class _MainScreenState extends State<MainScreen> {
 
     MenuProvider mp = Provider.of<MenuProvider>(context);
 
-    final rtl = ZoomDrawer.isRTL();
     return ValueListenableBuilder<DrawerState>(
       valueListenable: ZoomDrawer.of(context).stateNotifier,
       builder: (context, state, child) {

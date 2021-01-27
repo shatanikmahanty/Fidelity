@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
@@ -27,7 +28,7 @@ class _DrawerPagesState extends State<DrawerPages> {
   String lastWords = '', lastStatus;
   String lastError;
 
-  static const platform = const MethodChannel('com.shatanik.fidelity/playMusic');
+  static const platform = const MethodChannel('com.shatanik.fidelity');
 
   bool isDeviceConnected = true;
 
@@ -48,7 +49,13 @@ class _DrawerPagesState extends State<DrawerPages> {
   }
 
   Future<void> playSong(String songName) async {
-    await platform.invokeMethod('playMusic',{"song":songName});
+    await platform.invokeMethod('playMusic', {"song": songName});
+  }
+
+  static Future<bool> setAlarm({int hour = 12, int minute = 0}) async {
+    bool ok = await platform
+        .invokeMethod('setAlarm', {"hour": hour, "minute": minute});
+    return ok;
   }
 
   void resultListener(SpeechRecognitionResult result) async {
@@ -71,7 +78,17 @@ class _DrawerPagesState extends State<DrawerPages> {
       if (lastWords.startsWith("play")) {
         String command = lastWords.replaceAll("play", "");
         playSong(command);
-
+      } else if (lastWords.startsWith("set alarm for")) {
+        String command =
+            lastWords.replaceAll("set alarm for", "").replaceAll(":", "");
+        print(command);
+        setAlarm(
+          hour: int.parse(command.length > 3
+              ? command.substring(0, 2)
+              : command.substring(0, 1)),
+          minute: int.parse(
+              command.length > 3 ? command.substring(2) : command.substring(1)),
+        );
       } else if (lastWords.startsWith("open")) {
         String command = lastWords.replaceAll(" ", "");
         if (command.contains("openwhatsapp") && command.contains("send")) {
@@ -315,24 +332,30 @@ class _DrawerPagesState extends State<DrawerPages> {
               print("The user has denied the use of speech recognition.");
             }
           },
-          child: ShaderMask(
-            shaderCallback: (Rect bounds) {
-              return RadialGradient(
-                center: Alignment.topLeft,
-                radius: 0.5,
-                colors: <Color>[
-                  Colors.greenAccent[200],
-                  Colors.blueAccent[200],
-                  Colors.red
-                ],
-                tileMode: TileMode.repeated,
-              ).createShader(bounds);
-            },
-            child: Icon(
-              Icons.settings_voice,
-              size: 40,
-            ),
-          ),
+          child: kIsWeb
+              ? Icon(
+                  Icons.settings_voice,
+                  color: Colors.greenAccent[200],
+                  size: 40,
+                )
+              : ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return RadialGradient(
+                      center: Alignment.topLeft,
+                      radius: 0.5,
+                      colors: <Color>[
+                        Colors.greenAccent[200],
+                        Colors.blueAccent[200],
+                        Colors.red
+                      ],
+                      tileMode: TileMode.repeated,
+                    ).createShader(bounds);
+                  },
+                  child: Icon(
+                    Icons.settings_voice,
+                    size: 40,
+                  ),
+                ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -357,18 +380,31 @@ class _DrawerPagesState extends State<DrawerPages> {
                 ),
           title: Text(
             "Fidelity",
-            style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-                foreground: Paint()..shader = linearGradient,
-                fontFamily: "Potta",
-                shadows: <Shadow>[
-                  Shadow(
-                    offset: Offset(4, 4),
-                    blurRadius: 3.0,
-                    color: Colors.black.withOpacity(0.6),
-                  ),
-                ]),
+            style: kIsWeb
+                ? TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xffF7EF8A),
+                    fontFamily: "Potta",
+                    shadows: <Shadow>[
+                        Shadow(
+                          offset: Offset(4, 4),
+                          blurRadius: 3.0,
+                          color: Colors.black.withOpacity(0.6),
+                        ),
+                      ])
+                : TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()..shader = linearGradient,
+                    fontFamily: "Potta",
+                    shadows: <Shadow>[
+                        Shadow(
+                          offset: Offset(4, 4),
+                          blurRadius: 3.0,
+                          color: Colors.black.withOpacity(0.6),
+                        ),
+                      ]),
           ),
           backgroundColor: Color(0xff2F2F31)),
     );
