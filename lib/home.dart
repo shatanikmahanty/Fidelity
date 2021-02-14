@@ -7,15 +7,14 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:provider/provider.dart';
 
 import 'blocs/menu_provider.dart';
-import 'menu_page.dart';
+import 'screens/menu_page.dart';
 
 class Home extends StatefulWidget {
-  static List<MenuItem> mainMenu = [
-    MenuItem("payment", Icons.payment, 0),
-    MenuItem("promos", Icons.card_giftcard, 1),
-    MenuItem("notifications", Icons.notifications, 2),
-    MenuItem("help", Icons.help, 3),
-    MenuItem("Settings", Icons.settings, 4),
+  static List<MenuItem> menuItems = [
+    MenuItem("Assistant", Icons.payment, 0),
+    MenuItem("Read Aloud", Icons.record_voice_over_outlined, 1),
+    MenuItem("Help", Icons.help, 2),
+    MenuItem("Settings", Icons.settings, 3),
   ];
 
   @override
@@ -42,7 +41,7 @@ class _HomeState extends State<Home> {
     return ZoomDrawer(
       controller: _drawerController,
       menuScreen: MenuScreen(
-        Home.mainMenu,
+        Home.menuItems,
         callback: _updatePage,
         current: _currentPage,
       ),

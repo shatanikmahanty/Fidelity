@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:provider/provider.dart';
 
-import 'blocs/menu_provider.dart';
+import '../blocs/menu_provider.dart';
 
 class MenuScreen extends StatefulWidget {
   final List<MenuItem> mainMenu;
@@ -23,9 +23,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  final widthBox = SizedBox(
-    width: 16.0,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +42,9 @@ class _MenuScreenState extends State<MenuScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                Color(0xffF7EF8A),
+                Color(0xffb38728),
                 Color(0xffD2AC47),
+                Color(0xfffbf5B7),
               ],
             ),
           ),
@@ -61,6 +59,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         icon: Icon(
                           Icons.menu,
                           color: Colors.black,
+                          semanticLabel: "Close Menu",
                         ),
                         onPressed: () {
                           ZoomDrawer.of(context).toggle();
@@ -79,7 +78,6 @@ class _MenuScreenState extends State<MenuScreen> {
                                 key: Key(item.index.toString()),
                                 item: item,
                                 callback: widget.callback,
-                                widthBox: widthBox,
                                 selected: index == item.index,
                               ))
                           .toList()
@@ -98,20 +96,22 @@ class _MenuScreenState extends State<MenuScreen> {
 
 class MenuItemWidget extends StatelessWidget {
   final MenuItem item;
-  final Widget widthBox;
   final Function callback;
   final bool selected;
 
   const MenuItemWidget(
-      {Key key, this.item, this.widthBox, this.callback, this.selected})
+      {Key key, this.item,this.callback, this.selected})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      child: FlatButton(
-        color: selected ? Colors.white38 : null,
+      child: TextButton(
+        // color: selected ? Colors.white38 : null,
+        style: ButtonStyle(
+          backgroundColor: selected ? MaterialStateProperty.all<Color>(Colors.white38 ) : null,
+        ),
         onPressed: () => callback(item.index),
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20),
@@ -120,12 +120,13 @@ class MenuItemWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              SizedBox(width: 8,),
               Icon(
                 item.icon,
                 color: Colors.black,
                 size: 24,
               ),
-              widthBox,
+              SizedBox(width: 16,),
               Expanded(
                 child: Text(
                   item.title,
