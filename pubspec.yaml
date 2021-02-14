@@ -17,13 +17,13 @@ dependencies:
   contacts_service: ^0.4.6
   url_launcher: ^5.7.10
   progress_indicators: ^0.1.5
-  provider: ^4.3.2+4
   permission_handler: ^5.0.1+1
   flutter_phone_direct_caller: ^1.0.1
   animated_text_kit: ^3.1.0
   flutter_open_whatsapp: ^0.1.2
   installed_apps: ^1.1.1
   intent: ^1.4.0
+  provider: ^4.3.3
   webview_flutter: ^1.0.7
   flutter_zoom_drawer: ^1.0.4+1
   # The following adds the Cupertino Icons font to your application.

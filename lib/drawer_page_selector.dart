@@ -1,13 +1,13 @@
+import 'package:fidelity/blocs/assitant_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,13 +28,9 @@ class _DrawerPagesState extends State<DrawerPages> {
   String lastWords = '', lastStatus;
   String lastError;
 
-  static const platform = const MethodChannel('com.shatanik.fidelity');
-
-  bool isDeviceConnected = true;
+  SpeechToText speech = SpeechToText();
 
   FlutterTts flutterTts = FlutterTts();
-
-  SpeechToText speech = SpeechToText();
 
   final Shader linearGradient = LinearGradient(
       begin: Alignment.topLeft,
@@ -44,45 +40,41 @@ class _DrawerPagesState extends State<DrawerPages> {
         Color(0xffD2AC47),
       ]).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0));
 
-  void _callNumber(String phone) async {
-    await FlutterPhoneDirectCaller.callNumber(phone);
-  }
-
-  Future<void> playSong(String songName) async {
-    await platform.invokeMethod('playMusic', {"song": songName});
-  }
-
-  static Future<bool> setAlarm({int hour = 12, int minute = 0}) async {
-    bool ok = await platform
-        .invokeMethod('setAlarm', {"hour": hour, "minute": minute});
-    return ok;
-  }
-
-  void resultListener(SpeechRecognitionResult result) async {
+  void resultListener(SpeechRecognitionResult result, AssistantBloc ab) async {
     setState(() {
       lastWords = '${result.recognizedWords}';
     });
 
     if (!speech.isListening) {
       await speech.stop();
+      ab.updateListeningStatus();
       print(lastWords);
       lastWords = lastWords.toLowerCase();
+
       if (await flutterTts.isLanguageAvailable("en-IN"))
         await flutterTts.setLanguage("en-IN");
 
       await flutterTts.setSpeechRate(1);
       await flutterTts.setVolume(0.9);
       await flutterTts.setPitch(1);
+      await flutterTts
+          .setVoice({"name": "en - us - x - tpf - local", "locale": "en - US"});
       await flutterTts.awaitSpeakCompletion(true);
 
-      if (lastWords.startsWith("play")) {
+      if (lastWords.startsWith("search")) {
+        String command = lastWords.replaceAll("search", "");
+        await flutterTts
+            .speak("Asking google to perform a search for" + command);
+        await ab.performSearch(command);
+      } else if (lastWords.startsWith("play")) {
         String command = lastWords.replaceAll("play", "");
-        playSong(command);
+        await flutterTts.speak("Playing $command");
+        ab.playSong(command);
       } else if (lastWords.startsWith("set alarm for")) {
         String command =
             lastWords.replaceAll("set alarm for", "").replaceAll(":", "");
         print(command);
-        setAlarm(
+        ab.setAlarm(
           hour: int.parse(command.length > 3
               ? command.substring(0, 2)
               : command.substring(0, 1)),
@@ -123,7 +115,7 @@ class _DrawerPagesState extends State<DrawerPages> {
                 .toLowerCase()
                 .trim()
                 .startsWith(requiredCallRecipient)) {
-              _callNumber(allContacts.first.phones.first.toString());
+              ab.callNumber(allContacts.first.phones.first.toString());
             }
           } else {
             allContacts.forEach((contact) {
@@ -136,7 +128,7 @@ class _DrawerPagesState extends State<DrawerPages> {
             });
 
             if (results.length == 1) {
-              _callNumber(results.first.phones.first.value);
+              ab.callNumber(results.first.phones.first.value);
             } else {
               await flutterTts.speak(
                   "I found multiple contacts for $requiredCallRecipient. I am still learning how to distinguish multiple contacts");
@@ -194,6 +186,10 @@ class _DrawerPagesState extends State<DrawerPages> {
     });
   }
 
+  getVoices() async {
+    print((await flutterTts.getVoices).toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     final angle = ZoomDrawer.isRTL() ? 180 * pi / 180 : 0.0;
@@ -201,34 +197,35 @@ class _DrawerPagesState extends State<DrawerPages> {
         context.select<MenuProvider, int>((provider) => provider.currentPage);
 
     MenuProvider mp = Provider.of<MenuProvider>(context);
+    AssistantBloc ab = Provider.of<AssistantBloc>(context);
 
     return Scaffold(
       backgroundColor: Color(0xff2F2F31),
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.all(15.0),
-          children: [
-            // SizedBox(
-            //   width: 250.0,
-            //   child: TypewriterAnimatedTextKit(
-            //     onTap: () {
-            //       print("Tap Event");
-            //     },
-            //     text: [
-            //       "Discipline is the best tool Design first, then code Do not patch bugs out, rewrite them Do not test bugs out, design them out"
-            //     ],
-            //     repeatForever: false,
-            //     textStyle: TextStyle(
-            //         fontSize: 30.0,
-            //         fontFamily: "Agne"
-            //     ),
-            //     textAlign: TextAlign.start,
-            //     displayFullTextOnTap: true,
-            //     speed: Duration(milliseconds: 120),
-            //   ),
-            // ),
-            speech.isListening
+      body: Column(
+        children: [
+          if (ab.isWorking)
+            Align(
+              alignment: Alignment.topLeft,
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.black,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.white,
+                ),
+              ),
+            ),
+          if (ab.isListening)
+            Align(
+              alignment: Alignment.topLeft,
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.blue,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.white,
+                ),
+              ),
+            ),
+          Spacer(),
+          Center(
+            child: speech.isListening
                 ? Column(
                     children: [
                       JumpingText(
@@ -257,8 +254,9 @@ class _DrawerPagesState extends State<DrawerPages> {
                       fontSize: 18,
                     ),
                   ),
-          ],
-        ),
+          ),
+          Spacer(),
+        ],
       ),
       bottomNavigationBar: Container(
           decoration: BoxDecoration(
@@ -308,7 +306,10 @@ class _DrawerPagesState extends State<DrawerPages> {
         width: 70,
         child: FloatingActionButton(
           onPressed: () async {
+            // getVoices();
             bool available = false;
+
+            ab.updateListeningStatus();
 
             setState(() {
               lastWords = '';
@@ -326,7 +327,12 @@ class _DrawerPagesState extends State<DrawerPages> {
                 listenFor: Duration(seconds: 10),
                 partialResults: true,
                 cancelOnError: true,
-                onResult: resultListener,
+                onResult: (SpeechRecognitionResult result) {
+                  resultListener(result, ab);
+                },
+                onSoundLevelChange: (double value) {
+                  // TODO Update UI accordingly
+                },
               );
             } else {
               print("The user has denied the use of speech recognition.");
