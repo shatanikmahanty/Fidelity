@@ -10,7 +10,7 @@ Icon Meanings <br> :heavy_check_mark: : Completed, :x: : Unimplemented, :constru
 
 :heavy_check_mark: Open any app through voice command <B>open "appname"</B> <br>
 :construction: Call a person from saved contacts through voice command <B>call "contact name"</B> <br>
-:construction: Set Alarms through voice command {set alarm for "time and date"} <br>
+:construction: Set Alarms through voice command <B>set alarm for "time"</B> Progress : ![50%](https://progress-bar.dev/20) <br>
 :x: Voice Assistant Settings {search "topicname"} . <br>
 :x: Execute Google search {search "topicname"} . <br>
 :x: Convert pdf to audiobook. <br>
